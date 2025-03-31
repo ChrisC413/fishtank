@@ -11,6 +11,9 @@ export class Rock extends Entity {
         
         // Rocks don't move
         this.velocity = { x: 0, y: 0 };
+
+        // Collision boundary is lower than visual height to allow fish to swim over
+        this.collisionHeight = this.size.height * 0.7; // 70% of visual height
     }
 
     update(deltaTime, aquarium) {
@@ -44,5 +47,27 @@ export class Rock extends Entity {
             ctx.closePath();
             ctx.fill();
         }
+    }
+
+    // Override the collision check to use the reduced height
+    checkCollision(other) {
+        if (other.type === 'fish') {
+            // Use the reduced collision height for fish
+            const rockTop = this.position.y - this.collisionHeight;
+            const rockBottom = this.position.y;
+            const rockLeft = this.position.x - this.size.width / 2;
+            const rockRight = this.position.x + this.size.width / 2;
+
+            const fishTop = other.position.y - other.size.height / 2;
+            const fishBottom = other.position.y + other.size.height / 2;
+            const fishLeft = other.position.x - other.size.width / 2;
+            const fishRight = other.position.x + other.size.width / 2;
+
+            return !(fishLeft > rockRight || 
+                    fishRight < rockLeft || 
+                    fishBottom < rockTop || 
+                    fishTop > rockBottom);
+        }
+        return false;
     }
 } 

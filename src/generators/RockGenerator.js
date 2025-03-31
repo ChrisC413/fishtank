@@ -18,16 +18,17 @@ export class RockGenerator {
     }
 
     generateRandomRock(options = {}) {
+        // Determine if this is a large rock or pile
+        const isLargeRock = Math.random() < 0.3; // 30% chance for large rock
+        const isPile = Math.random() < 0.2; // 20% chance for pile
+
         // Base configuration
         const config = {
             position: options.position || {
                 x: Math.random() * 800 + 100, // Keep away from edges
                 y: 650 + (Math.random() * 30) // Start below ground line (650)
             },
-            size: options.size || {
-                width: Math.random() * 40 + 30,  // 30-70 pixels wide
-                height: Math.random() * 30 + 20  // 20-50 pixels high
-            },
+            size: options.size || this.generateRockSize(isLargeRock, isPile),
             ...options
         };
 
@@ -42,6 +43,25 @@ export class RockGenerator {
 
         // Create and return a Rock instance
         return new Rock(config);
+    }
+
+    generateRockSize(isLargeRock, isPile) {
+        if (isPile) {
+            return {
+                width: Math.random() * 100 + 80,  // 80-180 pixels wide
+                height: Math.random() * 60 + 40   // 40-100 pixels high
+            };
+        } else if (isLargeRock) {
+            return {
+                width: Math.random() * 60 + 50,   // 50-110 pixels wide
+                height: Math.random() * 40 + 30   // 30-70 pixels high
+            };
+        } else {
+            return {
+                width: Math.random() * 40 + 30,   // 30-70 pixels wide
+                height: Math.random() * 30 + 20   // 20-50 pixels high
+            };
+        }
     }
 
     generateColors() {
@@ -66,7 +86,8 @@ export class RockGenerator {
 
     generatePoints(config) {
         const points = [];
-        const numPoints = Math.floor(Math.random() * 4) + 6; // 6-9 points for irregular shape
+        // More points for larger rocks
+        const numPoints = Math.floor(Math.random() * 4) + (config.size.width > 100 ? 8 : 6);
         const centerX = 0;
         const centerY = 0;
         const radiusX = config.size.width / 2;
