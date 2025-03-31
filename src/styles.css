@@ -12,6 +12,7 @@ body {
     align-items: center;
     min-height: 100vh;
     padding: 20px;
+    overflow: hidden;
 }
 
 .container {
@@ -22,6 +23,37 @@ body {
     padding: 20px;
     background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.container.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background-color: #000;
+    z-index: 9999;
+}
+
+.container.fullscreen #aquarium-canvas {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+}
+
+.container.fullscreen .controls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 8px;
+    z-index: 10000;
 }
 
 #aquarium-canvas {
