@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+        
+        canvas {
+            display: block;
+            margin: 20px auto;
+            border: 2px solid #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <button id="add-fish">Add Fish</button>
+    </div>
+    
+    <canvas id="canvas" width="1000" height="700"></canvas>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            const fish = [];
+            
+            // Button to add fish
+            document.getElementById('add-fish').addEventListener('click', function() {
+                addFish();
+            });
+            
+            // Simple fish creation
+            function addFish() {
+                const fishSize = Math.random() * 30 + 40;
+                fish.push({
+                    x: Math.random() * (width - 100) + 50,
+                    y: Math.random() * (height - 150) + 50,
+                    size: fishSize,
+                    color: getRandomColor(),
+                    speedX: (Math.random() - 0.5) * 100,
+                    speedY: (Math.random() - 0.5) * 50
+                });
+                
+                console.log(`Added fish at (${fish[fish.length-1].x}, ${fish[fish.length-1].y})`);
+            }
+            
+            // Random color generator
+            function getRandomColor() {
+                const colors = [
+                    '#FF6347', '#4682B4', '#FFD700', '#32CD32', '#9370DB',
+                    '#FF69B4', '#20B2AA', '#FF8C00', '#8A2BE2', '#00FA9A'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            // Update fish positions
+            function update(deltaTime) {
+                fish.forEach(f => {
+                    // Update position
+                    f.x += f.speedX * deltaTime;
+                    f.y += f.speedY * deltaTime;
+                    
+                    // Boundary checks
+                    if (f.x < f.size/2 || f.x > width - f.size/2) {
+                        f.speedX *= -1;
+                        f.x = Math.max(f.size/2, Math.min(width - f.size/2, f.x));
+                    }
+                    
+                    if (f.y < f.size/2 || f.y > height - f.size/2) {
+                        f.speedY *= -1;
+                        f.y = Math.max(f.size/2, Math.min(height - f.size/2, f.y));
+                    }
+                });
+            }
+            
+            // Draw the aquarium
+            function draw() {
+                // Clear canvas
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw water background
+                ctx.fillStyle = '#87CEEB';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Draw gravel
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(0, height - 50, width, 50);
+                
+                // Draw fish
+                fish.forEach(f => {
+                    ctx.fillStyle = f.color;
+                    
+                    // Fish body
+                    ctx.beginPath();
+                    ctx.ellipse(f.x, f.y, f.size/2, f.size/3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Fish tail
+                    const tailDirection = f.speedX > 0 ? -1 : 1;
+                    ctx.beginPath();
+                    ctx.moveTo(f.x + (tailDirection * f.size/2), f.y);
+                    ctx.lineTo(f.x + (tailDirection * f.size), f.y - f.size/4);
+                    ctx.lineTo(f.x + (tailDirection * f.size), f.y + f.size/4);
+                    ctx.closePath();
+                    ctx.fill();
+                    
+                    // Fish eye
+                    ctx.fillStyle = 'white';
+                    const eyeX = f.x - (tailDirection * f.size/4);
+                    ctx.beginPath();
+                    ctx.arc(eyeX, f.y - f.size/6, f.size/10, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.fillStyle = 'black';
+                    ctx.beginPath();
+                    ctx.arc(eyeX + (tailDirection * f.size/20), f.y - f.size/6, f.size/20, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Debug info
+                    ctx.fillStyle = 'red';
+                    ctx.beginPath();
+                    ctx.arc(f.x, f.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+            
+            // Add initial fish
+            for (let i = 0; i < 10; i++) {
+                addFish();
+            }
+            
+            // Animation loop
+            let lastTime = 0;
+            
+            function gameLoop(timestamp) {
+                // Calculate delta time
+                const deltaTime = (timestamp - lastTime) / 1000 || 0;
+                lastTime = timestamp;
+                
+                // Update and draw
+                update(deltaTime);
+                draw();
+                
+                // Request next frame
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Start animation
+            requestAnimationFrame(gameLoop);
+            console.log("Test animation started");
+        });
+    </script>
+</body>
+</html> 
