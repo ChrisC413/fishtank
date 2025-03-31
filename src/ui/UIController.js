@@ -4,49 +4,41 @@ export class UIController {
         this.fishGenerator = fishGenerator;
         this.plantGenerator = plantGenerator;
         
-        // Set up event listeners
-        this.setupEventListeners();
+        // Get UI elements
+        this.feedBtn = document.getElementById('feed-btn');
+        this.spawnFishBtn = document.getElementById('spawn-fish-btn');
+        this.spawnPlantBtn = document.getElementById('spawn-plant-btn');
+        this.exportBtn = document.getElementById('export-btn');
+        this.importBtn = document.getElementById('import-btn');
+        this.toggleGridBtn = document.getElementById('toggle-grid-btn');
+        
+        // Add event listeners
+        this.feedBtn.addEventListener('click', () => this.handleFeed());
+        this.spawnFishBtn.addEventListener('click', () => this.handleSpawnFish());
+        this.spawnPlantBtn.addEventListener('click', () => this.handleSpawnPlant());
+        this.exportBtn.addEventListener('click', () => this.handleExport());
+        this.importBtn.addEventListener('click', () => this.handleImport());
+        this.toggleGridBtn.addEventListener('click', () => this.handleToggleGrid());
+        
+        // Create and add clear fish button
+        this.createClearFishButton();
+        
+        console.log("UIController initialized");
     }
 
-    setupEventListeners() {
-        // Feed button
-        const feedButton = document.getElementById('feed-btn');
-        if (feedButton) {
-            feedButton.addEventListener('click', this.handleFeed.bind(this));
-        }
+    createClearFishButton() {
+        const clearFishBtn = document.createElement('button');
+        clearFishBtn.id = 'clear-fish-btn';
+        clearFishBtn.textContent = 'Clear Fish';
+        clearFishBtn.addEventListener('click', () => this.handleClearFish());
         
-        // Spawn fish button
-        const spawnFishButton = document.getElementById('spawn-fish-btn');
-        if (spawnFishButton) {
-            spawnFishButton.addEventListener('click', this.handleSpawnFish.bind(this));
-        }
-        
-        // Spawn plant button
-        const spawnPlantButton = document.getElementById('spawn-plant-btn');
-        if (spawnPlantButton) {
-            spawnPlantButton.addEventListener('click', this.handleSpawnPlant.bind(this));
-        }
-        
-        // Export button
-        const exportButton = document.getElementById('export-btn');
-        if (exportButton) {
-            exportButton.addEventListener('click', this.handleExport.bind(this));
-        }
-        
-        // Import button
-        const importButton = document.getElementById('import-btn');
-        if (importButton) {
-            importButton.addEventListener('click', this.handleImport.bind(this));
-        }
-        
-        // Toggle grid button
-        const toggleGridButton = document.getElementById('toggle-grid-btn');
-        if (toggleGridButton) {
-            toggleGridButton.addEventListener('click', this.handleToggleGrid.bind(this));
-        }
-        
-        // Canvas click events
-        this.aquarium.canvas.addEventListener('click', this.handleCanvasClick.bind(this));
+        // Add the button to the controls div
+        const controlsDiv = document.querySelector('.controls');
+        controlsDiv.appendChild(clearFishBtn);
+    }
+
+    handleClearFish() {
+        this.aquarium.clearFish();
     }
 
     handleFeed() {

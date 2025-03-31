@@ -42,9 +42,10 @@ export class Entity {
             this.velocity.x *= -1; // Reverse direction
         }
         
-        // Top boundary
-        if (this.position.y < this.size.height / 2) {
-            this.position.y = this.size.height / 2;
+        // Top boundary (water line)
+        const waterLine = aquarium.height * 0.2; // 20% from top
+        if (this.position.y < waterLine + this.size.height / 2) {
+            this.position.y = waterLine + this.size.height / 2;
             this.velocity.y *= -1; // Reverse direction
         }
         

@@ -1,4 +1,7 @@
 import { Entity } from './Entity.js';
+import { WaterGenerator } from '../generators/WaterGenerator.js';
+import { GroundGenerator } from '../generators/GroundGenerator.js';
+import { Rock } from './Rock.js';
 
 export class Aquarium {
     constructor(canvas) {
@@ -8,16 +11,21 @@ export class Aquarium {
         this.height = canvas.height = 700;
         this.entities = {
             fish: [],
-            plants: []
-        };
-        this.background = {
-            waterColor: '#87CEEB',
-            gravelColor: '#8B4513'
+            plants: [],
+            rocks: []
         };
         this.frameCount = 0;
         this.isRunning = false;
         this.lastFrameTime = 0;
         this.showGrid = false; // Grid is hidden by default
+        
+        // Initialize generators
+        this.waterGenerator = new WaterGenerator();
+        this.groundGenerator = new GroundGenerator();
+        
+        // Generate textures
+        this.waterTexture = this.waterGenerator.generateWaterTexture(this.width, this.height);
+        this.groundTexture = this.groundGenerator.generateGroundTexture(this.width, 100);
         
         console.log(`Aquarium initialized with dimensions: ${this.width}x${this.height}`);
     }
@@ -65,14 +73,11 @@ export class Aquarium {
     }
 
     drawBackground() {
-        // Draw water
-        this.ctx.fillStyle = this.background.waterColor;
-        this.ctx.fillRect(0, 0, this.width, this.height);
+        // Draw water texture
+        this.ctx.drawImage(this.waterTexture, 0, 0);
 
-        // Draw gravel at the bottom
-        const gravelHeight = 50;
-        this.ctx.fillStyle = this.background.gravelColor;
-        this.ctx.fillRect(0, this.height - gravelHeight, this.width, gravelHeight);
+        // Draw ground texture
+        this.ctx.drawImage(this.groundTexture, 0, this.height - 100);
         
         // Draw grid lines for debugging, but only if the grid is enabled
         if (this.showGrid) {
@@ -112,16 +117,22 @@ export class Aquarium {
     }
 
     updateEntities(deltaTime) {
-        // Update and draw fish
-        for (const fish of this.entities.fish) {
-            fish.update(deltaTime, this);
-            fish.draw(this.ctx);
+        // Update and draw rocks first (they're in the background)
+        for (const rock of this.entities.rocks) {
+            rock.update(deltaTime, this);
+            rock.draw(this.ctx);
         }
 
         // Update and draw plants
         for (const plant of this.entities.plants) {
             plant.update(deltaTime, this);
             plant.draw(this.ctx);
+        }
+
+        // Update and draw fish last (they're in the foreground)
+        for (const fish of this.entities.fish) {
+            fish.update(deltaTime, this);
+            fish.draw(this.ctx);
         }
     }
 
@@ -132,7 +143,12 @@ export class Aquarium {
 
     addPlant(plant) {
         this.entities.plants.push(plant);
-        return plant;
+        console.log(`Added plant at position: ${plant.position.x}, ${plant.position.y}`);
+    }
+
+    addRock(rock) {
+        this.entities.rocks.push(rock);
+        console.log(`Added rock at position: ${rock.position.x}, ${rock.position.y}`);
     }
 
     removeEntity(entity) {
@@ -146,13 +162,19 @@ export class Aquarium {
             if (index !== -1) {
                 this.entities.plants.splice(index, 1);
             }
+        } else if (entity.type === 'rock') {
+            const index = this.entities.rocks.indexOf(entity);
+            if (index !== -1) {
+                this.entities.rocks.splice(index, 1);
+            }
         }
     }
 
     getEntities() {
         return {
             fish: [...this.entities.fish],
-            plants: [...this.entities.plants]
+            plants: [...this.entities.plants],
+            rocks: [...this.entities.rocks]
         };
     }
 
@@ -168,5 +190,10 @@ export class Aquarium {
     toggleGrid() {
         this.showGrid = !this.showGrid;
         return this.showGrid;
+    }
+
+    clearFish() {
+        this.entities.fish = [];
+        console.log("All fish cleared from aquarium");
     }
 } 

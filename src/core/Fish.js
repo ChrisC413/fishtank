@@ -77,11 +77,14 @@ export class Fish extends Entity {
         // Draw the fish body
         this.drawBody(ctx);
         
-        // Draw appendages (fins, tail, eyes)
+        // Draw appendages (fins and tail)
         this.drawAppendages(ctx);
         
         // Draw patterns
         this.drawPatterns(ctx);
+        
+        // Draw eyes last to ensure they're on top
+        this.drawEyes(ctx);
         
         ctx.restore();
     }
@@ -148,12 +151,11 @@ export class Fish extends Entity {
             ctx.closePath();
             ctx.fill();
         }
-        
-        // Draw just one eye on the visible side due to perspective
-        // Draw only the first eye from the eyes array
-        if (this.appendages.eyes && this.appendages.eyes.length > 0) {
-            const eye = this.appendages.eyes[0];
-            
+    }
+
+    drawEyes(ctx) {
+        // Draw all eyes
+        for (const eye of this.appendages.eyes) {
             // Draw eye outline
             ctx.fillStyle = eye.color || '#FFFFFF';
             ctx.beginPath();

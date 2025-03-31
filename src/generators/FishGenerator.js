@@ -87,18 +87,50 @@ export class FishGenerator {
             });
         }
         
-        // Generate one eye only (for side perspective)
+        // Generate eyes with rare variations
         const eyeSize = config.size.height * (Math.random() * 0.1 + 0.08);
-        appendages.eyes = [
-            {
+        appendages.eyes = [];
+        
+        // Determine number of eyes (rare variations)
+        const eyeRoll = Math.random();
+        let numEyes;
+        if (eyeRoll < 0.01) { // 1% chance for 0 eyes
+            numEyes = 0;
+        } else if (eyeRoll < 0.02) { // 1% chance for 2 eyes
+            numEyes = 2;
+        } else if (eyeRoll < 0.03) { // 1% chance for 3 eyes
+            numEyes = 3;
+        } else { // 97% chance for 1 eye
+            numEyes = 1;
+        }
+        
+        // Generate eye positions based on count
+        for (let i = 0; i < numEyes; i++) {
+            let xOffset, yOffset;
+            if (numEyes === 1) {
+                // Single eye on the side
+                xOffset = config.size.width * 0.3;
+                yOffset = -config.size.height * 0.15;
+            } else if (numEyes === 2) {
+                // Two eyes side by side
+                xOffset = config.size.width * (0.3 + (i - 0.5) * 0.1);
+                yOffset = -config.size.height * 0.15;
+            } else if (numEyes === 3) {
+                // Three eyes in a triangle pattern
+                const angle = (i * 2 * Math.PI) / 3;
+                xOffset = config.size.width * (0.3 + Math.cos(angle) * 0.1);
+                yOffset = config.size.height * (-0.15 + Math.sin(angle) * 0.1);
+            }
+            
+            appendages.eyes.push({
                 position: {
-                    x: config.size.width * 0.3,
-                    y: -config.size.height * 0.15
+                    x: xOffset,
+                    y: yOffset
                 },
                 size: eyeSize,
                 color: '#FFFFFF'
-            }
-        ];
+            });
+        }
         
         return appendages;
     }
@@ -116,10 +148,24 @@ export class FishGenerator {
                 const spots = [];
                 
                 for (let i = 0; i < numSpots; i++) {
+                    // Generate spot position within fish body bounds
+                    let x, y;
+                    let spotSize;
+                    
+                    // Keep trying until we get a valid position
+                    do {
+                        x = (Math.random() * 0.8 - 0.4) * config.size.width;
+                        y = (Math.random() * 0.8 - 0.4) * config.size.height;
+                        spotSize = Math.random() * 3 + 2;
+                        
+                        // Check if spot is within fish body bounds
+                        const isWithinBounds = this.isPointInFishBody(x, y, config);
+                    } while (!this.isPointInFishBody(x, y, config));
+                    
                     spots.push({
-                        x: (Math.random() * 0.8 - 0.4) * config.size.width,
-                        y: (Math.random() * 0.8 - 0.4) * config.size.height,
-                        size: Math.random() * 3 + 2
+                        x,
+                        y,
+                        size: spotSize
                     });
                 }
                 
@@ -133,13 +179,38 @@ export class FishGenerator {
                 const stripes = [];
                 
                 for (let i = 0; i < numStripes; i++) {
-                    const stripeHeight = config.size.height * (Math.random() * 0.2 + 0.1);
-                    stripes.push({
-                        x: (Math.random() * 0.4 - 0.2) * config.size.width,
-                        y: (Math.random() * 0.8 - 0.4) * config.size.height,
-                        width: config.size.width * (Math.random() * 0.4 + 0.3),
-                        height: stripeHeight
-                    });
+                    // Generate stripe position within fish body bounds
+                    let x, y, width, height;
+                    
+                    // Keep trying until we get a valid stripe
+                    do {
+                        x = (Math.random() * 0.4 - 0.2) * config.size.width;
+                        y = (Math.random() * 0.8 - 0.4) * config.size.height;
+                        width = config.size.width * (Math.random() * 0.4 + 0.3);
+                        height = config.size.height * (Math.random() * 0.2 + 0.1);
+                        
+                        // Check if stripe corners are within fish body bounds
+                        const corners = [
+                            { x: x - width/2, y: y - height/2 },
+                            { x: x + width/2, y: y - height/2 },
+                            { x: x - width/2, y: y + height/2 },
+                            { x: x + width/2, y: y + height/2 }
+                        ];
+                        
+                        const allCornersInBounds = corners.every(corner => 
+                            this.isPointInFishBody(corner.x, corner.y, config)
+                        );
+                        
+                        if (allCornersInBounds) {
+                            stripes.push({
+                                x,
+                                y,
+                                width,
+                                height
+                            });
+                            break;
+                        }
+                    } while (true);
                 }
                 
                 patterns.push({
@@ -151,5 +222,32 @@ export class FishGenerator {
         }
         
         return patterns;
+    }
+
+    // Helper method to check if a point is within the fish's body
+    isPointInFishBody(x, y, config) {
+        const halfWidth = config.size.width / 2;
+        const halfHeight = config.size.height / 2;
+        
+        switch (config.baseShape) {
+            case 'oval':
+                // Check if point is within ellipse
+                return (x * x) / (halfWidth * halfWidth) + (y * y) / (halfHeight * halfHeight) <= 1;
+                
+            case 'rectangle':
+                // Check if point is within rectangle
+                return Math.abs(x) <= halfWidth && Math.abs(y) <= halfHeight;
+                
+            case 'triangle':
+                // Check if point is within triangle
+                const isAboveBottom = y >= -halfHeight;
+                const isBelowTop = y <= halfHeight;
+                const isWithinSides = Math.abs(x) <= halfWidth * (1 - (y + halfHeight) / (2 * halfHeight));
+                return isAboveBottom && isBelowTop && isWithinSides;
+                
+            default:
+                // Default to oval check
+                return (x * x) / (halfWidth * halfWidth) + (y * y) / (halfHeight * halfHeight) <= 1;
+        }
     }
 } 

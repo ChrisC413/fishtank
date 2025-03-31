@@ -10,10 +10,10 @@ export class PlantGenerator {
     generateRandomPlant(options = {}) {
         // Base configuration
         const config = {
-            // Plants are positioned at the bottom of the tank
+            // Plants are positioned at the bottom of the tank, but not at the very bottom
             position: options.position || { 
-                x: Math.random() * 700 + 150, 
-                y: 650 // Always on the ground
+                x: Math.random() * 700 + 150, // Keep away from edges
+                y: 650 - (Math.random() * 20) // Random height in the ground, but not at the very bottom
             },
             size: options.size || { 
                 width: Math.random() * 20 + 20, 
