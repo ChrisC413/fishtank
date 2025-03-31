@@ -51,4 +51,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     console.log("Total entities:", aquarium.entities.fish.length, "fish,", aquarium.entities.plants.length, "plants");
+
+    // Add fullscreen functionality
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const container = document.querySelector('.container');
+    
+    fullscreenBtn.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            container.classList.add('fullscreen');
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error(`Error attempting to enable fullscreen: ${err.message}`);
+                container.classList.remove('fullscreen');
+            });
+        } else {
+            document.exitFullscreen();
+            container.classList.remove('fullscreen');
+        }
+    });
+
+    // Handle fullscreen changes
+    document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement) {
+            container.classList.remove('fullscreen');
+        }
+    });
 }); 
